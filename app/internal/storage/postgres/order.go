@@ -7,7 +7,7 @@ import (
 )
 
 func (s *Storage) Unload(ctx context.Context) ([]*models.Order, error) {
-	query := `SELECT data FROM orders`
+	query := `SELECT uid, data FROM orders`
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (s *Storage) Unload(ctx context.Context) ([]*models.Order, error) {
 }
 
 func (s *Storage) Save(ctx context.Context, order *models.Order) error {
-	query := `INSERT INTO orders VALUES (?,?)`
+	query := `INSERT INTO orders VALUES ($1,$2)`
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err

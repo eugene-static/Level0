@@ -14,27 +14,23 @@ import (
 	"time"
 
 	"github.com/eugene-static/Level0/app/internal/cache"
-	"github.com/eugene-static/Level0/app/internal/config"
 	"github.com/eugene-static/Level0/app/internal/nats"
 	"github.com/eugene-static/Level0/app/internal/service"
 	"github.com/eugene-static/Level0/app/internal/storage/postgres"
 	transport "github.com/eugene-static/Level0/app/internal/transport/http"
+	"github.com/eugene-static/Level0/app/lib/config"
+	"github.com/eugene-static/Level0/app/lib/logger"
 )
 
 func Run() {
-	l := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       slog.LevelDebug,
-		ReplaceAttr: nil,
-	}))
-	//l.Info("")
 	cfgPath := os.Getenv("CFG_PATH")
-	l.Info("getting config")
 	cfg, err := config.Get(cfgPath)
 	if err != nil || cfg == nil {
-		l.Error("failed to get config", slog.Any("details", err))
+		slog.Error("failed to get config", slog.Any("details", err))
 		return
 	}
+	l := logger.New(&cfg.Logger)
+	l.Info("log level", slog.String("level", cfg.Logger.Level))
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	listener, err := net.Listen(cfg.Server.Network, fmt.Sprintf("%s:%s", cfg.Server.IP, cfg.Server.Port))
@@ -42,6 +38,7 @@ func Run() {
 		l.Error("failed to announce listener", slog.Any("details", err))
 		return
 	}
+	l.Info("getting storage")
 	str, err := postgres.New(ctx, &cfg.Postgres)
 	if err != nil {
 		l.Error("failed to get storage", slog.Any("details", err))
@@ -49,11 +46,12 @@ func Run() {
 	}
 	cch := cache.New(&sync.RWMutex{})
 	srv := service.New(str, cch)
+	l.Info("cache initialization")
 	if err = srv.Init(ctx); err != nil {
 		l.Error("failed to init cache", slog.Any("details", err))
 		return
 	}
-	handler := transport.New(l, srv)
+	handler := transport.New(l, &cfg.Server, srv)
 	router := http.NewServeMux()
 	handler.Register(router)
 	server := http.Server{
@@ -62,6 +60,7 @@ func Run() {
 		WriteTimeout: cfg.Server.Timeout * time.Second,
 	}
 	stream := nats.New(&cfg.Nats, l, srv)
+	l.Info("connecting to stream", slog.String("name", cfg.Nats.Subject))
 	sub, err := stream.Connect(ctx)
 	if err != nil {
 		l.Error("failed to connect to nats-streaming", slog.Any("details", err))
@@ -83,11 +82,15 @@ func Run() {
 		return
 	}
 	longSD := make(chan struct{}, 1)
-
 	go func() {
 		err = sub.Unsubscribe()
 		if err != nil {
 			l.Error("unable to unsubscribe", slog.Any("details", err))
+			return
+		}
+		err = str.Close(sdCtx)
+		if err != nil {
+			l.Error("unable to close stream", slog.Any("details", err))
 			return
 		}
 		longSD <- struct{}{}

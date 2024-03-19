@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/eugene-static/Level0/app/internal/config"
 	"github.com/eugene-static/Level0/app/internal/models"
+	"github.com/eugene-static/Level0/app/lib/config"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
 )
@@ -49,7 +49,7 @@ func (s *Streaming) Connect(ctx context.Context) (stan.Subscription, error) {
 				return
 			}
 			s.l.Info("data received successfully")
-		}, stan.StartWithLastReceived())
+		})
 	if err != nil {
 		return nil, err
 	}

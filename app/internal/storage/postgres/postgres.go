@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/eugene-static/Level0/app/internal/config"
+	"github.com/eugene-static/Level0/app/lib/config"
 	_ "github.com/lib/pq"
 )
 

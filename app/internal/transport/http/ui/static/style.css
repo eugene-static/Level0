@@ -1,0 +1,52 @@
+* {
+    box-sizing: border-box;
+    outline: 0;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+}
+
+header {
+    position: relative;
+    padding: 16px;
+    background: linear-gradient(0deg, rgba(36, 36, 36, .05) 0, rgba(36, 36, 36, .05) 100%), linear-gradient(97deg, #ed3cca .49%, #df34d2 14.88%, #d02bd9 29.27%, #bf22e1 43.14%, #ae1ae8 57.02%, #9a10f0 70.89%, #8306f7 84.76%, #7c1af8 99.15%);;
+}
+label {
+    display: none;
+}
+
+form {
+    height: 44px;
+    display: flex;
+    margin: 0;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #242424;
+}
+
+input {
+    width: 100%;
+    border: none;
+    font-size: 16px;
+    background-color: transparent;
+    padding: 9px 80px 9px 12px;
+    border-radius: inherit;
+    font-family: system, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Segoe WP', Roboto, Ubuntu, Oxygen, Cantarell, 'Fira Sans', 'Helvetica Neue', Helvetica, 'Lucida Grande', 'Droid Sans', Tahoma, 'Microsoft Sans Serif', sans-serif;
+}
+
+button {
+    cursor: pointer;
+    justify-content: center;
+    text-align: center;
+    background: none;
+    border: none;
+    height: 100%;
+    width: 48px;
+}
+
+span {
+    margin: 0 auto;
+    color: #b2b2b2;
+}
