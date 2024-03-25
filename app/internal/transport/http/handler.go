@@ -56,7 +56,6 @@ func (h *Handler) index(templatePath string) http.HandlerFunc {
 				h.serverError(w, "failed to parse html template", err)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
 			w.Header().Set(ct, ctText)
 			if err = tmpl.Execute(w, nil); err != nil {
 				h.serverError(w, "failed to apply html template", err)
